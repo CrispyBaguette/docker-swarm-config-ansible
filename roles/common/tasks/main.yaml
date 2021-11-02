@@ -1,0 +1,61 @@
+---
+- name: Install Docker dependencies
+  apt:
+    name: "{{item}}"
+    state: present
+    update_cache: yes
+  loop:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg
+    - lsb-release
+
+- name: Add Docker GPG key
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    keyring: /usr/share/keyrings/docker-archive-keyring.gpg
+    state: present
+
+- name: Get Docker repo deb
+  shell: echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+  register: cmd_output
+
+- name: Add Docker repository
+  apt_repository:
+    repo: "{{cmd_output.stdout}}"
+    filename: docker
+    state: present
+
+- name: Install pip & dependencies for docker
+  apt:
+    name: "{{item}}"
+    state: latest
+  loop:
+    - pip
+    - virtualenv
+    - python-setuptools
+
+- name: Install docker python module
+  pip:
+    name: docker
+
+- name: Install Docker & friends
+  apt:
+    name: "{{item}}"
+    state: latest
+    update_cache: yes
+  loop:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+
+- name: Ensure that Docker is started
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Init a new swarm
+  docker_swarm:
+    state: present
