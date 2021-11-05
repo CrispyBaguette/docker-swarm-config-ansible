@@ -2,7 +2,7 @@
 
 Automating Docker Swarm configs with Ansible
 
-The contents of this repository demonstrate the principles described [in this blog article](blog.bruyant.xyz/posts/automating-docker-configs/).
+The contents of this repository demonstrate the principles described [in this blog article](https://blog.bruyant.xyz/posts/automating-docker-configs/).
 
 Running `vagrant up` will provision a debian 11 VM running a Docker Swarm, by running the `init.yaml` playbook.
 
