@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Demo: Rotating Docker Swarm Configs with Ansible</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <p>
+      This file is stored as a Docker Swarm config. Since the file contents
+      depend on the date and time at which the file is generated, each playbook
+      run will result in a different config.
+    </p>
+    <p>This page was templated at : {{ ansible_date_time.iso8601 }}</p>
+  </body>
+</html>

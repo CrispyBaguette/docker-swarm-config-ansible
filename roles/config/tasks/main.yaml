@@ -1,0 +1,57 @@
+---
+- name: Initialize the config variables
+  set_fact:
+    conf_templates: "{{ {} }}"
+    config_names: "{{ {} }}"
+
+# Build the templates, encode them as base64
+- name: Build the config template
+  set_fact:
+    conf_templates: "{{ conf_templates | combine({item: lookup('template', item) | b64encode }) }}"
+  loop:
+    - roles/config/templates/index.html.j2
+
+# Ensure that the config templates are present on the Swarm
+# The config names are based on the name of the template file, as well as the
+# first characters of the sha1 hash of the b64-encoded templated file.
+# roles/config/templates/index.html.j2 -> index_conf_ce440d8e15
+- name: Deploy the configurations templates
+  docker_config:
+    name: "{{ (item | basename).split('.') | first }}_conf_{{ conf_templates[item] | hash('sha1') | truncate(10, end='') }}"
+    data: "{{ conf_templates[item] }}"
+    data_is_b64: true
+    state: present
+  loop:
+    - roles/config/templates/index.html.j2
+  register: config_templates_ids
+
+# Use the first part of the file name (e.g. "index") as a name that we can use later.
+- name: Populate config name dictionnary
+  set_fact:
+    config_names: "{{ config_names | combine( { (item.item | basename).split('.') | first : item.invocation.module_args.name } ) }}"
+  loop: "{{ config_templates_ids.results | flatten(levels=1) }}"
+
+# Define a Docker Swarm service that exposes the config we just created.
+- name: Deploy a Caddy instance
+  docker_stack:
+    state: present
+    name: demo_stack
+    compose:
+      - version: "3.8"
+        services:
+          caddy:
+            image: caddy:2
+            deploy:
+              replicas: 1
+            ports:
+              - target: 80
+                published: 8888
+                protocol: tcp
+                mode: ingress
+            configs:
+              - source: index_conf
+                target: /usr/share/caddy/index.html
+        configs:
+          index_conf:
+            name: "{{ config_names['index'] }}"
+            external: true

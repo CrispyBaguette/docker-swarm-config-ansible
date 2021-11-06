@@ -17,7 +17,7 @@
     keyring: /usr/share/keyrings/docker-archive-keyring.gpg
     state: present
 
-- name: Get Docker repo deb
+- name: Get Docker repo apt source
   shell: echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
   register: cmd_output
 
@@ -36,13 +36,17 @@
     - virtualenv
     - python-setuptools
 
-- name: Install docker python module
+- name: Install python dependencies
   pip:
-    name: docker
+    name: "{{ item }}"
+  loop:
+    - docker
+    - jsondiff
+    - pyyaml
 
 - name: Install Docker & friends
   apt:
-    name: "{{item}}"
+    name: "{{ item }}"
     state: latest
     update_cache: yes
   loop:
