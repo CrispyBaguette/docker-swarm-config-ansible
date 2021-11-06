@@ -8,6 +8,10 @@ Running `vagrant up` will provision a debian 11 VM running a Docker Swarm, by ru
 
 Running the `rotate_config.yaml` playbook will ensure that a service is running on the Docker Swarm, and generate a new config. The contents of the new config will be accessible on port 8080 ([here](http://localhost:8080/config.html)). Details about the config are accessible through `vagrant ssh` and `docker config ls`.
 
+```bash
+ansible-playbook --private-key=.vagrant/machines/default/virtualbox/private_key -u vagrant -i .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory
+```
+
 # Requirements
 
 - Ansible
